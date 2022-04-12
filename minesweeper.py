@@ -47,8 +47,13 @@ class MineSweeper:
         if clicked_button.is_mine:
             clicked_button.config(text="*", background='red', disabledforeground='black')
         else:
-            clicked_button.config(text=clicked_button.number, disabledforeground='black')
+            color = colors.get(clicked_button.count_bombs, 'black')
+            if clicked_button.count_bombs:
+                clicked_button.config(text=clicked_button.count_bombs, disabledforeground=color)
+            else:
+                clicked_button.config(text='', disabledforeground=color)
         clicked_button.config(state='disable')
+        clicked_button.config(relief=tk.SUNKEN)
 
     def create_widgets(self):
         for i in range(1, MineSweeper.ROWS+1):
@@ -71,7 +76,7 @@ class MineSweeper:
         self.insert_mines()
         self.count_mines_in_buttons()
         self.print_buttons()
-        self.open_all_buttons()
+        # self.open_all_buttons()
         MineSweeper.window.mainloop()
 
     def print_buttons(self):
