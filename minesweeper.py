@@ -1,6 +1,13 @@
 import tkinter as tk
 from random import shuffle
 
+colors = {
+    1: 'blue',
+    2: 'green',
+    3: 'yellow',
+    4: 'brown',
+}
+
 class MyButton(tk.Button):
 
     def __init__(self, master, x, y, number=0, *args, **kwargs):
@@ -18,9 +25,9 @@ class MyButton(tk.Button):
 class MineSweeper:
     
     window = tk.Tk()
-    ROWS = 5
-    COLUMNS = 7
-    MINES = 7
+    ROWS = 8
+    COLUMNS = 8
+    MINES = 15 
 
     def __init__(self):
         self.buttons = []
@@ -51,8 +58,9 @@ class MineSweeper:
                 btn = self.buttons[i][j]
                 if btn.is_mine:
                     btn.config(text='*', background='red', disabledforeground='black')
-                else:
-                    btn.config(text=btn.count_bombs, disabledforeground='black')
+                elif btn.count_bombs in colors:
+                    color = colors.get(btn.count_bombs, 'black')
+                    btn.config(text=btn.count_bombs, fg=color)
 
     def start(self):
         self.create_widgets()
