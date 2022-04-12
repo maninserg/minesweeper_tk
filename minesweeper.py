@@ -63,8 +63,14 @@ class MineSweeper:
         MineSweeper.window.mainloop()
 
     def print_buttons(self):
-        for i in range(MineSweeper.ROWS):
-            print(self.buttons[i])
+        for i in range(1, MineSweeper.ROWS+1):
+            for j in range(1, MineSweeper.COLUMNS+1):
+                btn = self.buttons[i][j]
+                if btn.is_mine:
+                    print('B', end='')
+                else:
+                    print(btn.count_bombs, end='')
+            print('')
     
     def insert_mines(self):
         index_mines = self.get_mines_places()
