@@ -1,6 +1,6 @@
-from pydoc import cli
 import tkinter as tk
 from random import shuffle
+from tkinter.messagebox import showinfo
 
 colors = {
     1: 'blue',
@@ -34,6 +34,8 @@ class MineSweeper:
     ROWS = 8
     COLUMNS = 8
     MINES = 15 
+    IS_GAME_OVER = False
+    IS_FIRST_CLICK = True 
 
     def __init__(self):
         self.buttons = []
@@ -46,9 +48,22 @@ class MineSweeper:
             self.buttons.append(temp)
 
     def click(self, clicked_button:MyButton):
+        if MineSweeper.IS_FIRST_CLICK:
+            self.insert_mines(clicked_button.number)
+            self.count_mines_in_buttons()
+            self.print_buttons()
+            MineSweeper.IS_FIRST_CLICK = False
+
         if clicked_button.is_mine:
             clicked_button.config(text="*", background='red', disabledforeground='black')
             clicked_button.is_open = True
+            MineSweeper.IS_GAME_OVER = True
+            showinfo('Game Over', 'You didnt win')
+            for i in range(1, MineSweeper.ROWS + 1):
+                for j in range(1, MineSweeper.COLUMNS + 1):
+                    btn = self.buttons[i][j]
+                    if btn.is_mine:
+                        btn['text'] = '*'
         else:
             color = colors.get(clicked_button.count_bombs, 'black')
             if clicked_button.count_bombs:
@@ -76,18 +91,21 @@ class MineSweeper:
                 x, y = cur_btn.x, cur_btn.y
                 for dx in [-1, 0, 1]:
                     for dy in [-1, 0, 1]:
-                        if not abs(dx-dy) == 1:
-                            continue
+                        #if not abs(dx-dy) == 1:
+                        #    continue
                         next_btn = self.buttons[x + dx][y + dy]
                         if not next_btn.is_open and 1 <= next_btn.x <= MineSweeper.ROWS and \
                             1 <= next_btn.y <= MineSweeper.COLUMNS and next_btn not in queue:
                             queue.append(next_btn)
                         
     def create_widgets(self):
+        count = 1
         for i in range(1, MineSweeper.ROWS+1):
             for j in range(1, MineSweeper.COLUMNS+1):
                 btn = self.buttons[i][j]
+                btn.number = count
                 btn.grid(row=i, column=j)
+                count += 1
 
     def open_all_buttons(self):
         for i in range(MineSweeper.ROWS+2):
@@ -101,9 +119,6 @@ class MineSweeper:
 
     def start(self):
         self.create_widgets()
-        self.insert_mines()
-        self.count_mines_in_buttons()
-        self.print_buttons()
         # self.open_all_buttons()
         MineSweeper.window.mainloop()
 
@@ -117,17 +132,14 @@ class MineSweeper:
                     print(btn.count_bombs, end='')
             print('')
     
-    def insert_mines(self):
-        index_mines = self.get_mines_places()
+    def insert_mines(self, number:int):
+        index_mines = self.get_mines_places(number)
         print(index_mines)
-        count = 1
         for i in range(1, MineSweeper.ROWS+1):
             for j in range(1, MineSweeper.COLUMNS+1):
                 btn = self.buttons[i][j]
-                btn.number = count
                 if btn.number in index_mines:
                     btn.is_mine = True
-                count += 1
     
     def count_mines_in_buttons(self):
         for i in range(1, MineSweeper.ROWS+1):
@@ -143,8 +155,9 @@ class MineSweeper:
                 btn.count_bombs = count_bombs
 
     @staticmethod
-    def get_mines_places():
+    def get_mines_places(exclude_number:int):
         indexes = list(range(1, MineSweeper.COLUMNS * MineSweeper.ROWS + 1))
+        indexes.remove(exclude_number)
         shuffle(indexes)
         return indexes[:MineSweeper.MINES]
 
