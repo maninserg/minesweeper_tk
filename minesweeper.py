@@ -3,9 +3,13 @@ from random import shuffle
 
 colors = {
     1: 'blue',
-    2: 'green',
-    3: 'yellow',
-    4: 'brown',
+    2: '#008200',
+    3: '#FF0000',
+    4: '#000084',
+    5: '#840000',
+    6: '#008284',
+    7: '#840084',
+    8: '#000000'
 }
 
 class MyButton(tk.Button):
