@@ -1,6 +1,7 @@
+from cProfile import label
 import tkinter as tk
 from random import shuffle
-from tkinter.messagebox import showinfo
+from tkinter.messagebox import showinfo, showerror
 
 colors = {
     1: 'blue',
@@ -48,6 +49,8 @@ class MineSweeper:
             self.buttons.append(temp)
 
     def click(self, clicked_button:MyButton):
+        if MineSweeper.IS_GAME_OVER:
+            return None
         if MineSweeper.IS_FIRST_CLICK:
             self.insert_mines(clicked_button.number)
             self.count_mines_in_buttons()
@@ -98,14 +101,64 @@ class MineSweeper:
                             1 <= next_btn.y <= MineSweeper.COLUMNS and next_btn not in queue:
                             queue.append(next_btn)
                         
+    def reload(self):
+        [child.destroy() for child in self.window.winfo_children()]
+        self.__init__()
+        self.create_widgets()
+        MineSweeper.IS_FIRST_CLICK = True
+        MineSweeper.IS_GAME_OVER = False 
+
+    def create_settings_window(self):
+        win_settings = tk.Toplevel(self.window)
+        win_settings.wm_title('Settings')
+        tk.Label(win_settings, text='Count rows').grid(row=0, column=0)
+        rows_entry = tk.Entry(win_settings)
+        rows_entry.insert(0, MineSweeper.ROWS)
+        rows_entry.grid(row=0, column=1, padx=20, pady=20)
+        tk.Label(win_settings, text='Count columns').grid(row=1, column=0)
+        columns_entry = tk.Entry(win_settings)
+        columns_entry.insert(0, MineSweeper.COLUMNS)
+        columns_entry.grid(row=1, column=1, padx=20, pady=20)
+        tk.Label(win_settings, text='Count mines').grid(row=2, column=0)
+        mines_entry = tk.Entry(win_settings)
+        mines_entry.insert(0, MineSweeper.MINES)
+        mines_entry.grid(row=2, column=1, padx=20, pady=20)
+
+        save_btn = tk.Button(win_settings, text='Save',
+                             command=lambda :self.change_settings(rows_entry, columns_entry, mines_entry))
+        save_btn.grid(row=3, column=0, columnspan=2, pady=10)
+        
+
+    def change_settings(self, row: tk.Entry, column: tk.Entry, mines: tk.Entry):
+        try:
+            int(row.get()), int(column.get()), int(mines.get())
+        except ValueError:
+            showerror('Error', 'You had entered the wrong value')
+            return 
+        MineSweeper.ROWS = int(row.get())
+        MineSweeper.COLUMNS = int(column.get())
+        MineSweeper.MINES = int(mines.get())
+        self.reload()
+
     def create_widgets(self):
+        menubar = tk.Menu(self.window)
+        self.window.config(menu=menubar)
+        setting_menu = tk.Menu(menubar, tearoff=0)
+        setting_menu.add_command(label='Play', command=self.reload)
+        setting_menu.add_command(label='Settings', command=self.create_settings_window)
+        setting_menu.add_command(label='Exit', command=self.window.destroy)
+        menubar.add_cascade(label='File', menu=setting_menu)
         count = 1
         for i in range(1, MineSweeper.ROWS+1):
             for j in range(1, MineSweeper.COLUMNS+1):
                 btn = self.buttons[i][j]
                 btn.number = count
-                btn.grid(row=i, column=j)
+                btn.grid(row=i, column=j, stick='nwse')
                 count += 1
+        for i in range(1, MineSweeper.ROWS+1):
+            tk.Grid.rowconfigure(self.window, i, weight=1)
+        for i in range(1, MineSweeper.COLUMNS+1):
+            tk.Grid.columnconfigure(self.window, i, weight=1)
 
     def open_all_buttons(self):
         for i in range(MineSweeper.ROWS+2):
