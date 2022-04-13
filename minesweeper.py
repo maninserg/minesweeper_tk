@@ -1,4 +1,5 @@
 from cProfile import label
+from threading import currentThread
 import tkinter as tk
 from random import shuffle
 from tkinter.messagebox import showinfo, showerror
@@ -45,8 +46,23 @@ class MineSweeper:
             for j in range(MineSweeper.COLUMNS+2):
                 btn = MyButton(MineSweeper.window, x=i, y=j)
                 btn.config(command=lambda button=btn: self.click(button))
+                btn.bind('<Button-3>', self.right_click)
                 temp.append(btn)
             self.buttons.append(temp)
+    
+    def right_click(self, event):
+        if MineSweeper.IS_GAME_OVER:
+            return 
+        cur_button = event.widget
+        print(event.widget['state'])
+        if cur_button['state'] == 'active':
+            cur_button['state'] = 'disabled'
+            cur_button['text'] = 'F'
+            cur_button['disabledforeground'] = 'red'
+        elif cur_button['text'] == 'F':
+            cur_button['text'] = ''
+            cur_button['state'] = 'active'
+
 
     def click(self, clicked_button:MyButton):
         if MineSweeper.IS_GAME_OVER:
